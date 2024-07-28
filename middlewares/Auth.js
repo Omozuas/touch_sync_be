@@ -26,32 +26,20 @@ class Auth{
       }
    
    });
-   static authIsAdmin =asynchandler(async(req,res,next)=>{
+
+   static authIsActivated =asynchandler(async(req,res,next)=>{
       //middleware logic will be ritten here 
       const {email}=req.user;
       const admin=await User.findOne({email});
-      if(admin.role !=="isAdmin"){
-         console.log(admin.role)
-         throw new Error('Users not Authorized');
-         
+      if(admin.isActivated == false){
+         throw new Error('Activate your account');
       }
-      console.log(admin.role)
+      
       next(); 
      
      });
 
-     static authIsVendor = asynchandler(async (req, res, next) => {
-      const { email } = req.user;
-      const user = await User.findOne({ email });
-  
-      if (!user || (user.role !== "isAdmin" && user.role !== "isVendor")) {
-          console.log(user ? user.role : "No user found");
-          return res.status(403).json({ message: 'User not authorized' });
-      }
-  
-      console.log(user.role);
-      next();
-  });
+
 }
 
 module.exports=Auth;

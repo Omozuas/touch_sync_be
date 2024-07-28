@@ -24,17 +24,17 @@ app.use('/',Router);
 app.use('/api/user',authRoter);
 app.use('/api/contact',contactRoter);
 
-cron.schedule("*/10 * * * *", async () => {
-    try {
-      const currentTime = new Date();
-      console.log(`Current time: ${currentTime}`);
+// cron.schedule("*/10 * * * *", async () => {
+//     try {
+//       const currentTime = new Date();
+//       console.log(`Current time: ${currentTime}`);
       
-      const response = await axios.get('https://touch-sync-be.onrender.com/');
-      console.log('API Response:', response.data);
-    } catch (error) {
-      console.error('Error fetching API:', error);
-    }
-  });
+//       const response = await axios.get('https://touch-sync-be.onrender.com/');
+//       console.log('API Response:', response.data);
+//     } catch (error) {
+//       console.error('Error fetching API:', error);
+//     }
+//   });
 
 //start server
 app.listen(process.env.PORT ,()=>{

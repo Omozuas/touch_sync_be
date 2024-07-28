@@ -17,11 +17,14 @@ var userSchema = new mongoose.Schema({
     },
     mobile:{
         type:String,
-        unique:true,
     },
     password:{
         type:String,
         required:true,
+    },
+    isActivated:{
+        type:Boolean,
+        default:false
     },
     refreshToken:{
         type:String,

@@ -9,6 +9,7 @@ Route.post('/signup',authRoter.createUser);
 Route.post('/logIn',authRoter.loginUser);
 Route.post('/forgot-password-token',authRoter.forgotPassword);
 Route.post('/reset-password',authRoter.resetPassword);
+Route.post('/verify-otp',Auth.authmiddleware,authRoter.verifyToken);
 
 Route.get('/getUser',authRoter.getUsers);
 Route.get('/logout',Auth.authmiddleware,authRoter.logout);

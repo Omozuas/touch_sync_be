@@ -5,28 +5,51 @@ const jwtToken = require('../config/jwtToken');
 const jwt = require("jsonwebtoken");
 const { validateMongodbId } = require('../utils/validatemongodb');
 const crypto=require('crypto');
+const { sendOtp, verifyOtp } = require('../services/otp.service');
 
 
 
 class UserController{
     static  createUser = asynchandler(async (req,res)=>{
-       
-       const isExisting = await User.findOne({ email: req.body.email });
-    
-       if (isExisting) {
-        throw new Error('Email Already Exists')
-        }
+      
+
+        const isExisting = await User.findOne({ email: req.body.email });
+          if (isExisting) {
+            throw new Error('Email Already Exists')
+          }
        const hashedPassword = await bcrypt.hash(req.body.password,10);
-       const newUser=new User({
-        firstname:req.body.firstname,
-        lastname:req.body.lastname,
-        mobile:req.body.mobile,
-        email:req.body.email,
-        password:hashedPassword,
-    
-       });
-       await newUser.save();
-       return res.status(200).json({newUser,message:'SigUp successful',success:true});
+      sendOtp(
+        {
+          email: req.body.email,
+        },async (err,result)=>{
+          if(err){
+            return res.status(401).json(
+              {
+
+                message:'Failed to send otp',
+                success:false
+              });
+          }else if(result){
+            const newUser=new User({
+              firstname:req.body.firstname,
+              lastname:req.body.lastname,
+              mobile:req.body.mobile,
+              email:req.body.email,
+              password:hashedPassword,
+             });
+             
+             await newUser.save();
+             return res.status(200).json(
+              {
+                hash:result,
+                token:jwtToken.generateToken(newUser?.id),
+                message:'OTP Sent To Mail',
+                success:true
+              });
+          }
+        });
+     
+        
 
     });
     static loginUser = asynchandler(async(req,res)=>{
@@ -46,10 +69,6 @@ class UserController{
             refreshToken:refreshToken,
             isLogin:true
         },{new:true})
-        res.cookie("refreshToken",refreshToken,{
-            httpOnly:true,
-            maxAge:72*60*60*1000,
-        });
       return res.status(200).json({ 
             role: isExisting?.role,
             token:jwtToken.generateToken(isExisting?.id),
@@ -218,6 +237,28 @@ class UserController{
    
    
     });
-   
+    static verifyToken= asynchandler(async(req,res)=>{
+      const { id } = req.user;
+      validateMongodbId(id);
+     verifyOtp (req.body, async (err, results) => {
+        if (err) {
+          return res.status(401).send({
+            message: err,
+            success:false
+        });
+        }
+        const user = await User.findByIdAndUpdate(id,{
+          isActivated:true
+       },{new:true});
+       if (!user) {
+        throw new Error('User not found');
+      }
+        return res.status(200).send({
+            message: results,
+            
+            success:true
+        });
+    });
+  });
 }
 module.exports=UserController;
